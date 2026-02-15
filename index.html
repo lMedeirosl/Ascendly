@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LifeOS - Sistema de Desenvolvimento Pessoal</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Navigation Tabs -->
+  <nav class="main-nav">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <h1>🌱 LifeOS</h1>
+      </div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('estudos')">📚 Estudos</button>
+        <button class="nav-tab" onclick="switchTab('alimentacao')">🥗 Alimentação</button>
+        <button class="nav-tab" onclick="switchTab('treino')">💪 Treino</button>
+        <button class="nav-tab" onclick="switchTab('tarefas')">✅ Tarefas</button>
+      </div>
+      <div class="nav-actions">
+        <button class="icon-btn" onclick="toggleTheme()">🌙</button>
+        <button class="icon-btn" onclick="openSettingsModal()">⚙️</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Global Stats Bar -->
+  <div class="global-stats">
+    <div class="global-stats-container">
+      <div class="global-stat">
+        <div class="global-stat-icon">📚</div>
+        <div class="global-stat-info">
+          <div class="global-stat-value" id="globalStudyStreak">0</div>
+          <div class="global-stat-label">Dias Estudando</div>
+        </div>
+      </div>
+      <div class="global-stat">
+        <div class="global-stat-icon">🥗</div>
+        <div class="global-stat-info">
+          <div class="global-stat-value" id="globalFoodStreak">0</div>
+          <div class="global-stat-label">Dias Comendo Bem</div>
+        </div>
+      </div>
+      <div class="global-stat">
+        <div class="global-stat-icon">💪</div>
+        <div class="global-stat-info">
+          <div class="global-stat-value" id="globalWorkoutStreak">0</div>
+          <div class="global-stat-label">Dias Treinando</div>
+        </div>
+      </div>
+      <div class="global-stat">
+        <div class="global-stat-icon">✅</div>
+        <div class="global-stat-info">
+          <div class="global-stat-value" id="globalTasksCompleted">0</div>
+          <div class="global-stat-label">Tarefas Completas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================
+       TAB: ESTUDOS
+       ======================================== -->
+  <div id="tab-estudos" class="tab-content active">
+    
+    <!-- Stats Grid -->
+    <section class="section">
+      <div class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <div class="stat-label">Level</div>
+            <div class="stat-value" id="studyLevel">1</div>
+            <div class="progress-bar">
+              <div id="studyXpProgress" class="progress-fill"></div>
+            </div>
+            <div class="stat-subtext"><span id="studyCurrentXP">0</span>/<span id="studyNextLevelXP">10</span> XP</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-content">
+            <div class="stat-label">Streak</div>
+            <div class="stat-value" id="studyStreak">0</div>
+            <div class="stat-subtext">dias consecutivos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-content">
+            <div class="stat-label">Hoje</div>
+            <div class="stat-value" id="studyToday">0</div>
+            <div class="stat-subtext">minutos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-label">Esta Semana</div>
+            <div class="stat-value" id="studyWeek">0</div>
+            <div class="stat-subtext">minutos</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timer Section -->
+    <section class="section">
+      <div class="section-header">
+        <h2>⏱️ Timer de Estudo</h2>
+        <div class="timer-mode-selector">
+          <button class="mode-btn active" id="normalModeBtn" onclick="setTimerMode('normal')">Normal</button>
+          <button class="mode-btn" id="pomodoroModeBtn" onclick="setTimerMode('pomodoro')">🍅 Pomodoro</button>
+        </div>
+      </div>
+      
+      <div class="timer-card">
+        <select id="timerSubjectSelect" class="select-field">
+          <option value="">Selecione uma matéria</option>
+        </select>
+
+        <div id="pomodoroInfo" class="pomodoro-info" style="display: none;">
+          <p>🍅 25 min foco + 5 min pausa • Sessão <span id="pomodoroSession">1</span>/4</p>
+        </div>
+
+        <div class="timer-display" id="timerDisplay">00:00:00</div>
+        
+        <div class="timer-controls">
+          <button class="btn btn-success" id="startBtn" onclick="startTimer()">▶️ Iniciar</button>
+          <button class="btn btn-warning" id="pauseBtn" onclick="pauseTimer()" disabled>⏸️ Pausar</button>
+          <button class="btn btn-danger" id="stopBtn" onclick="stopTimer()" disabled>⏹️ Finalizar</button>
+        </div>
+
+        <div class="session-info" id="sessionInfo" style="display: none;">
+          <p>Estudando: <strong id="currentSubject">-</strong></p>
+          <p>Tempo: <strong id="elapsedTime">0 min</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Subjects Management -->
+    <section class="section">
+      <div class="section-header">
+        <h2>📚 Minhas Matérias</h2>
+        <button class="btn btn-primary" onclick="openAddSubjectModal()">➕ Adicionar</button>
+      </div>
+      <div id="subjectsContainer" class="grid-3"></div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="section">
+      <div class="card">
+        <h3>⚡ Ações Rápidas</h3>
+        <select id="quickSubjectSelect" class="select-field">
+          <option value="">Selecione uma matéria</option>
+        </select>
+        <div class="action-buttons">
+          <button class="btn btn-secondary" onclick="addQuickStudy(15)">+15 min</button>
+          <button class="btn btn-secondary" onclick="addQuickStudy(30)">+30 min</button>
+          <button class="btn btn-secondary" onclick="addQuickStudy(60)">+1h</button>
+          <button class="btn btn-secondary" onclick="addQuickStudy(90)">+1h30</button>
+        </div>
+        <div id="studyFeedback" class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="section">
+      <div class="grid-2">
+        <div class="card">
+          <h3>📊 Progresso Semanal</h3>
+          <canvas id="studyRadarChart"></canvas>
+        </div>
+        <div class="card">
+          <h3>📈 Histórico (30 dias)</h3>
+          <canvas id="studyLineChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ========================================
+       TAB: ALIMENTAÇÃO
+       ======================================== -->
+  <div id="tab-alimentacao" class="tab-content">
+    
+    <!-- Food Stats -->
+    <section class="section">
+      <div class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <div class="stat-label">Meta Semanal</div>
+            <div class="stat-value"><span id="foodGoalProgress">0</span>/<span id="foodGoalTotal">21</span></div>
+            <div class="progress-bar">
+              <div id="foodGoalBar" class="progress-fill"></div>
+            </div>
+            <div class="stat-subtext">refeições limpas</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-content">
+            <div class="stat-label">Streak</div>
+            <div class="stat-value" id="foodStreak">0</div>
+            <div class="stat-subtext">dias seguindo</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-content">
+            <div class="stat-label">Hoje</div>
+            <div class="stat-value" id="foodToday">0</div>
+            <div class="stat-subtext">refeições</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-label">Esta Semana</div>
+            <div class="stat-value" id="foodWeek">0</div>
+            <div class="stat-subtext">refeições</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Food Log -->
+    <section class="section">
+      <div class="card">
+        <h2>🍽️ Registrar Refeição</h2>
+        
+        <div class="form-group">
+          <label>Tipo de Refeição:</label>
+          <select id="mealType" class="select-field">
+            <option value="cafe">☕ Café da Manhã</option>
+            <option value="almoco">🍱 Almoço</option>
+            <option value="lanche">🥤 Lanche</option>
+            <option value="janta">🍽️ Janta</option>
+            <option value="ceia">🌙 Ceia</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>O que você comeu?</label>
+          <textarea id="mealDescription" class="textarea-field" placeholder="Ex: Frango grelhado, arroz integral, brócolis..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="mealClean"> Esta foi uma refeição limpa/saudável
+          </label>
+        </div>
+
+        <button class="btn btn-success btn-block" onclick="addMeal()">✅ Registrar Refeição</button>
+        <div id="foodFeedback" class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- Today's Meals -->
+    <section class="section">
+      <div class="card">
+        <h3>📝 Refeições de Hoje</h3>
+        <div id="todayMealsContainer" class="meals-list"></div>
+      </div>
+    </section>
+
+    <!-- Weekly Goal -->
+    <section class="section">
+      <div class="card">
+        <h3>🎯 Objetivo Semanal</h3>
+        <div class="form-group">
+          <label>Qual é seu objetivo esta semana?</label>
+          <textarea id="weeklyFoodGoal" class="textarea-field" placeholder="Ex: Comer 21 refeições limpas, beber 2L de água por dia..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveWeeklyFoodGoal()">💾 Salvar Objetivo</button>
+        
+        <div id="currentWeeklyGoal" class="goal-display" style="margin-top: 1rem;"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ========================================
+       TAB: TREINO
+       ======================================== -->
+  <div id="tab-treino" class="tab-content">
+    
+    <!-- Workout Stats -->
+    <section class="section">
+      <div class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-icon">💪</div>
+          <div class="stat-content">
+            <div class="stat-label">Meta Semanal</div>
+            <div class="stat-value"><span id="workoutGoalProgress">0</span>/<span id="workoutGoalTotal">5</span></div>
+            <div class="progress-bar">
+              <div id="workoutGoalBar" class="progress-fill"></div>
+            </div>
+            <div class="stat-subtext">treinos completos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-content">
+            <div class="stat-label">Streak</div>
+            <div class="stat-value" id="workoutStreak">0</div>
+            <div class="stat-subtext">dias seguidos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-content">
+            <div class="stat-label">Esta Semana</div>
+            <div class="stat-value" id="workoutWeek">0</div>
+            <div class="stat-subtext">treinos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-content">
+            <div class="stat-label">Tempo Total</div>
+            <div class="stat-value" id="workoutTotalTime">0</div>
+            <div class="stat-subtext">minutos</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Log Workout -->
+    <section class="section">
+      <div class="card">
+        <h2>🏋️ Registrar Treino</h2>
+        
+        <div class="form-group">
+          <label>Tipo de Treino:</label>
+          <select id="workoutType" class="select-field">
+            <option value="peito">💪 Peito</option>
+            <option value="costas">🦾 Costas</option>
+            <option value="pernas">🦵 Pernas</option>
+            <option value="ombros">💪 Ombros</option>
+            <option value="bracos">💪 Braços</option>
+            <option value="cardio">🏃 Cardio</option>
+            <option value="fullbody">🔥 Full Body</option>
+            <option value="funcional">⚡ Funcional</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Duração (minutos):</label>
+          <input type="number" id="workoutDuration" class="input-field" placeholder="Ex: 60" min="1">
+        </div>
+
+        <div class="form-group">
+          <label>Exercícios realizados:</label>
+          <textarea id="workoutExercises" class="textarea-field" placeholder="Ex: Supino 4x10, Crucifixo 3x12..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Notas (opcional):</label>
+          <textarea id="workoutNotes" class="textarea-field" placeholder="Como foi o treino? Alguma observação?"></textarea>
+        </div>
+
+        <button class="btn btn-success btn-block" onclick="addWorkout()">✅ Registrar Treino</button>
+        <div id="workoutFeedback" class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- Workout History -->
+    <section class="section">
+      <div class="card">
+        <h3>📝 Histórico de Treinos</h3>
+        <div id="workoutHistoryContainer" class="workout-history"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ========================================
+       TAB: TAREFAS
+       ======================================== -->
+  <div id="tab-tarefas" class="tab-content">
+    
+    <!-- Tasks Stats -->
+    <section class="section">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-content">
+            <div class="stat-label">Completas Hoje</div>
+            <div class="stat-value" id="tasksCompletedToday">0</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">📋</div>
+          <div class="stat-content">
+            <div class="stat-label">Pendentes</div>
+            <div class="stat-value" id="tasksPending">0</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-label">Esta Semana</div>
+            <div class="stat-value" id="tasksCompletedWeek">0</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <div class="stat-label">Taxa de Conclusão</div>
+            <div class="stat-value" id="tasksCompletionRate">0%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Add Task -->
+    <section class="section">
+      <div class="card">
+        <h2>➕ Nova Tarefa</h2>
+        
+        <div class="form-group">
+          <input type="text" id="newTaskTitle" class="input-field" placeholder="O que você precisa fazer?">
+        </div>
+
+        <div class="form-group">
+          <label>Prioridade:</label>
+          <select id="newTaskPriority" class="select-field">
+            <option value="baixa">🟢 Baixa</option>
+            <option value="media" selected>🟡 Média</option>
+            <option value="alta">🔴 Alta</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Categoria:</label>
+          <select id="newTaskCategory" class="select-field">
+            <option value="pessoal">👤 Pessoal</option>
+            <option value="trabalho">💼 Trabalho</option>
+            <option value="estudos">📚 Estudos</option>
+            <option value="saude">🏥 Saúde</option>
+            <option value="outros">📌 Outros</option>
+          </select>
+        </div>
+
+        <button class="btn btn-success btn-block" onclick="addTask()">✅ Adicionar Tarefa</button>
+        <div id="taskFeedback" class="feedback"></div>
+      </div>
+    </section>
+
+    <!-- Tasks List -->
+    <section class="section">
+      <div class="section-header">
+        <h2>📋 Minhas Tarefas</h2>
+        <div class="task-filters">
+          <button class="filter-btn active" onclick="filterTasks('todas')">Todas</button>
+          <button class="filter-btn" onclick="filterTasks('pendentes')">Pendentes</button>
+          <button class="filter-btn" onclick="filterTasks('concluidas')">Concluídas</button>
+        </div>
+      </div>
+      
+      <div id="tasksContainer" class="tasks-list"></div>
+    </section>
+
+  </div>
+
+  <!-- MODALS -->
+  
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeSettingsModal()">&times;</span>
+      <h2>⚙️ Configurações</h2>
+      
+      <div class="form-group">
+        <label>Meta de Refeições Limpas (por semana):</label>
+        <input type="number" id="weeklyFoodGoalInput" class="input-field" min="1" value="21">
+      </div>
+
+      <div class="form-group">
+        <label>Meta de Treinos (por semana):</label>
+        <input type="number" id="weeklyWorkoutGoalInput" class="input-field" min="1" value="5">
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="notificationsEnabled"> Ativar Notificações
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="soundEnabled"> Sons Ativos
+        </label>
+      </div>
+
+      <button class="btn btn-success btn-block" onclick="saveSettings()">💾 Salvar</button>
+    </div>
+  </div>
+
+  <!-- Add Subject Modal -->
+  <div id="addSubjectModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeAddSubjectModal()">&times;</span>
+      <h2>➕ Adicionar Matéria</h2>
+      
+      <div class="form-group">
+        <label>Nome da Matéria:</label>
+        <input type="text" id="newSubjectName" class="input-field" placeholder="Ex: Matemática">
+      </div>
+      
+      <div class="form-group">
+        <label>Meta Semanal (horas):</label>
+        <input type="number" id="newSubjectGoal" class="input-field" placeholder="Ex: 10" min="1">
+      </div>
+      
+      <button class="btn btn-success btn-block" onclick="addNewSubject()">✅ Adicionar</button>
+    </div>
+  </div>
+
+  <!-- Edit Subject Modal -->
+  <div id="editSubjectModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeEditSubjectModal()">&times;</span>
+      <h2>✏️ Editar Matéria</h2>
+      
+      <div class="form-group">
+        <label>Nome:</label>
+        <input type="text" id="editSubjectName" class="input-field" disabled>
+      </div>
+      
+      <div class="form-group">
+        <label>Meta Semanal (horas):</label>
+        <input type="number" id="editSubjectGoal" class="input-field" min="1">
+      </div>
+      
+      <button class="btn btn-success btn-block" onclick="saveEditSubject()">💾 Salvar</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>LifeOS v5.0 - Sistema Completo de Desenvolvimento Pessoal</p>
+    <button class="btn btn-secondary" onclick="exportData()">💾 Exportar</button>
+    <button class="btn btn-secondary" onclick="importData()">📥 Importar</button>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
